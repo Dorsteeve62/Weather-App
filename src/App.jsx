@@ -8,7 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/Weather-App">
       <AuthProvider>
         <Toaster position="top-center" />
         <Routes>
