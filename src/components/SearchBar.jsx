@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function SearchBar({ onSearch }) {
     const [city, setCity] = useState('');
@@ -18,7 +19,11 @@ export default function SearchBar({ onSearch }) {
 
     return (
         <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto relative z-10">
-            <div className={`relative transition-transform ${isError ? 'animate-shake' : ''}`}>
+            <motion.div
+                animate={isError ? { x: [-5, 5, -5, 5, 0] } : {}}
+                transition={{ duration: 0.4 }}
+                className="relative"
+            >
                 <input
                     type="text"
                     value={city}
@@ -27,17 +32,7 @@ export default function SearchBar({ onSearch }) {
                     className="w-full py-3 px-12 rounded-full glass-input shadow-lg text-lg"
                 />
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
-            </div>
-            <style jsx>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-          20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-        .animate-shake {
-          animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-      `}</style>
+            </motion.div>
         </form>
     );
 }

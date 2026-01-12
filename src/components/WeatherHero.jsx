@@ -15,7 +15,7 @@ export default function WeatherHero({ weather }) {
                 <div className="flex items-center justify-center space-x-4">
                     {weather.weather && weather.weather[0] && (
                         <img
-                            src={`http://openweathermap.org/img/wn/${weather.weather[0].icon}@4x.png`}
+                            src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@4x.png`}
                             alt={weather.weather[0].description}
                             className="w-24 h-24 md:w-32 md:h-32 drop-shadow-lg"
                         />

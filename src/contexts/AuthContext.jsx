@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../firebase";
-import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { auth, googleProvider, db, storage } from "../firebase";
+import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, deleteUser } from "firebase/auth";
+import { doc, setDoc, deleteDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const AuthContext = createContext();
 
@@ -12,8 +14,16 @@ export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    function signup(email, password) {
-        return createUserWithEmailAndPassword(auth, email, password);
+    async function signup(email, password, firstName, lastName) {
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        const user = result.user;
+        await setDoc(doc(db, "users", user.uid), {
+            firstName,
+            lastName,
+            email,
+            createdAt: new Date()
+        });
+        return result;
     }
 
     function login(email, password) {
@@ -22,6 +32,38 @@ export function AuthProvider({ children }) {
 
     function logout() {
         return signOut(auth);
+    }
+
+    function loginWithGoogle() {
+        return signInWithPopup(auth, googleProvider);
+    }
+
+    async function uploadProfilePicture(file, user) {
+        const fileRef = ref(storage, `profile_images/${user.uid}`);
+        const snapshot = await uploadBytes(fileRef, file);
+        const photoURL = await getDownloadURL(snapshot.ref);
+        await updateProfile(user, { photoURL });
+        return photoURL;
+    }
+
+    async function updateUserPassword(currentPassword, newPassword) {
+        const user = auth.currentUser;
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPassword);
+    }
+
+    async function deleteAccount(password) {
+        const user = auth.currentUser;
+        // Re-authenticate first
+        const credential = EmailAuthProvider.credential(user.email, password);
+        await reauthenticateWithCredential(user, credential);
+
+        // Delete Firestore doc
+        await deleteDoc(doc(db, "users", user.uid));
+
+        // Delete Auth user
+        await deleteUser(user);
     }
 
     useEffect(() => {
@@ -37,7 +79,11 @@ export function AuthProvider({ children }) {
         currentUser,
         signup,
         login,
-        logout
+        logout,
+        loginWithGoogle,
+        uploadProfilePicture,
+        updateUserPassword,
+        deleteAccount
     };
 
     return (

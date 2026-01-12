@@ -24,7 +24,7 @@ export default function ForecastRail({ forecast }) {
                         >
                             <span className="font-semibold mb-2">{dayName}</span>
                             <img
-                                src={`http://openweathermap.org/img/wn/${day.weather[0].icon}.png`}
+                                src={`https://openweathermap.org/img/wn/${day.weather[0].icon}.png`}
                                 alt={day.weather[0].description}
                                 className="w-10 h-10 mb-2"
                             />
