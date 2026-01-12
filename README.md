@@ -26,8 +26,7 @@ A responsive weather application built with **React** and **Vite**. This app all
 
 1.  **Clone the repository**
     ```bash
-    git clone [https://github.com/Dorsteeve62/Weather-App.git](https://github.com/Dorsteeve62/Weather-App.git)
-    cd Weather-App
+    git clone https://github.com/Dorsteeve62/Weather-App.git
     ```
 
 2.  **Install dependencies**
