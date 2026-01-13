@@ -5,7 +5,8 @@ A responsive weather application built with **React** and **Vite**. This app all
 
 <img width="924" height="958" alt="Screenshot 2026-01-12 123047" src="https://github.com/user-attachments/assets/fc7ca83f-8063-46de-b08f-a1b4bcf4bb99" />
 
-<img width="927" height="953" alt="Screenshot 2026-01-12 123131" src="https://github.com/user-attachments/assets/d5d59fe5-9f09-43fb-be46-663975f211c4" />
+<img width="1515" height="886" alt="Screenshot 2026-01-12 221854" src="https://github.com/user-attachments/assets/9ac6d04b-74b1-45f2-a1ec-7122be87a155" />
+
 
 
 ## 🚀 Features
