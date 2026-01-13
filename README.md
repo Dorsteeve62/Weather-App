@@ -54,4 +54,4 @@ A responsive weather application built with **React** and **Vite**. This app all
 ---
 
 ### 👤 Author
-**Dorsteeve**
+**Steeve Dor**
