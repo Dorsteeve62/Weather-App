@@ -5,6 +5,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin } from 'lucide-react';
 import WeatherHero from '../components/WeatherHero';
 import BentoGrid from '../components/BentoGrid';
 import ForecastRail from '../components/ForecastRail';
@@ -21,54 +22,70 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Load persisted city on mount
+    // Always get real-time location on mount
     useEffect(() => {
-        const loadUserCity = async () => {
-            if (currentUser) {
-                try {
-                    const docRef = doc(db, "users", currentUser.uid);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists() && docSnap.data().lastCity) {
-                        fetchWeather(docSnap.data().lastCity);
-                    } else {
-                        // Default city if none saved
-                        fetchWeather('New York');
-                    }
-                } catch (error) {
-                    console.error("Error loading user data:", error);
-                    fetchWeather('New York');
-                }
-            }
-        };
-        loadUserCity();
+        if (currentUser) {
+            getUserLocation();
+        }
     }, [currentUser]);
 
-    const fetchWeather = async (city) => {
+    const getUserLocation = () => {
+        setLoading(true);
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    fetchWeather({
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude
+                    });
+                },
+                (error) => {
+                    console.error("Location error:", error);
+                    toast.error("Location access denied. Defaulting to New York.");
+                    fetchWeather('New York');
+                }
+            );
+        } else {
+            toast.error("Geolocation is not supported by your browser.");
+            fetchWeather('New York');
+        }
+    };
+
+    const fetchWeather = async (query) => {
         setLoading(true);
         try {
+            let weatherUrl, forecastUrl;
+
+            // Determine API URL based on query type (string vs object)
+            if (typeof query === 'string') {
+                weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${query}&units=imperial&appid=${API_KEY}`;
+                forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${query}&units=imperial&appid=${API_KEY}`;
+            } else if (query.lat && query.lon) {
+                weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${query.lat}&lon=${query.lon}&units=imperial&appid=${API_KEY}`;
+                forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${query.lat}&lon=${query.lon}&units=imperial&appid=${API_KEY}`;
+            } else {
+                return; // Invalid query
+            }
+
             // Current Weather
-            const weatherRes = await axios.get(
-                `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${API_KEY}`
-            );
+            const weatherRes = await axios.get(weatherUrl);
             setWeather(weatherRes.data);
             updateBackground(weatherRes.data);
 
             // Forecast
-            const forecastRes = await axios.get(
-                `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=imperial&appid=${API_KEY}`
-            );
+            const forecastRes = await axios.get(forecastUrl);
             setForecast(forecastRes.data);
 
-            // Persist to Firestore
+            // Persist to Firestore (save the city name returned by the API)
             if (currentUser) {
                 await setDoc(doc(db, "users", currentUser.uid), {
-                    lastCity: city
+                    lastCity: weatherRes.data.name
                 }, { merge: true });
             }
 
         } catch (error) {
-            toast.error(error.response?.data?.message || "City not found");
-            // Don't crash, just stop loading
+            console.error(error);
+            toast.error(error.response?.data?.message || "Error fetching weather");
         }
         setLoading(false);
     };
@@ -110,9 +127,18 @@ export default function Dashboard() {
                 </button>
             </div>
 
-            {/* Search */}
-            <div className="w-full max-w-md mb-8">
-                <SearchBar onSearch={fetchWeather} />
+            {/* Search & Location */}
+            <div className="w-full max-w-md mb-8 flex items-center gap-2">
+                <div className="flex-1">
+                    <SearchBar onSearch={fetchWeather} />
+                </div>
+                <button
+                    onClick={getUserLocation}
+                    className="p-3 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all shadow-lg backdrop-blur-md"
+                    title="Use My Location"
+                >
+                    <MapPin size={22} />
+                </button>
             </div>
 
             {loading ? (

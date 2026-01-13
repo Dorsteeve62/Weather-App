@@ -107,13 +107,10 @@ export default function Login() {
                         Sign in with Google
                     </button>
 
-                    <div className="relative mb-4">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-white/20"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-2 bg-transparent text-white/50">Or continue with email</span>
-                        </div>
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="flex-1 border-t border-white/20"></div>
+                        <span className="text-sm text-white/50 shrink-0">Or continue with email</span>
+                        <div className="flex-1 border-t border-white/20"></div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
