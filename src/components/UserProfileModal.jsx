@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { X, Camera, Lock, User, Trash2, LogOut, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 

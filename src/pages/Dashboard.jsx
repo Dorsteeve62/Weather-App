@@ -4,7 +4,6 @@ import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import WeatherHero from '../components/WeatherHero';
 import BentoGrid from '../components/BentoGrid';
@@ -22,12 +21,43 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Always get real-time location on mount
+    const [userName, setUserName] = useState('');
+
+    // Always get real-time location on mount, and fetch user name
     useEffect(() => {
-        if (currentUser) {
-            getUserLocation();
-        }
+        const loadUserData = async () => {
+            if (currentUser) {
+                try {
+                    // Get location
+                    getUserLocation();
+
+                    // Get User Name from Firestore
+                    const docRef = doc(db, "users", currentUser.uid);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        // Use Firestore first name, or Google display name, or fallback
+                        setUserName(data.firstName || currentUser.displayName?.split(' ')[0] || 'Friend');
+                    } else {
+                        setUserName(currentUser.displayName?.split(' ')[0] || 'Friend');
+                    }
+                } catch (error) {
+                    console.error("Error loading user data:", error);
+                    setUserName(currentUser.displayName?.split(' ')[0] || 'Friend');
+                    getUserLocation();
+                }
+            }
+        };
+        loadUserData();
     }, [currentUser]);
+
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Good Morning';
+        if (hour < 18) return 'Good Afternoon';
+        return 'Good Evening';
+    };
 
     const getUserLocation = () => {
         setLoading(true);
@@ -110,7 +140,12 @@ export default function Dashboard() {
         <div className={`min-h-screen transition-all duration-1000 bg-gradient-to-br ${bgClass} flex flex-col items-center p-4`}>
             {/* Top Bar */}
             <div className="w-full max-w-6xl flex justify-between items-center mb-8 pt-4">
-                <h2 className="text-xl font-semibold opacity-80">WeatherApp</h2>
+                <div className="flex flex-col">
+                    <h2 className="text-2xl font-bold text-white tracking-wide">
+                        {getGreeting()}, {userName}
+                    </h2>
+                    <p className="text-white/60 text-sm">Welcome back</p>
+                </div>
 
                 {/* User Avatar */}
                 <button
